@@ -1,0 +1,109 @@
+# =========================
+# Environment & Secrets
+# =========================
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+credentials/
+config/secrets*
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+virtualenv/
+
+# Python tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# =========================
+# Node.js
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# =========================
+# IDE / Editors
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+
+# =========================
+# Build / Cache
+# =========================
+dist/
+build/
+.cache/
+.tmp/
+temp/
+tmp/
+
+# =========================
+# Generated files
+# =========================
+*.pyc
+*.pyo
+*.pyd
+
+# =========================
+# Local databases
+# =========================
+*.sqlite
+*.sqlite3
+*.db
+
+# =========================
+# Large / generated data
+# =========================
+uploads/
+outputs/
+generated/
+data/
+datasets/
+
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# Coverage
+# =========================
+coverage/
