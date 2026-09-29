@@ -1,0 +1,11 @@
+torch
+torchaudio
+transformers
+accelerate
+sentencepiece
+safetensors
+faster-whisper
+soundfile
+jiwer
+numpy
+pyannote.audio

@@ -1,0 +1,335 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TINE AI POC — Test Guide &amp; Requirements Coverage</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; background: #f8f9fc; color: #1a202c; font-size: 14px; line-height: 1.6; }
+  .page { max-width: 860px; margin: 0 auto; padding: 40px 24px 60px; }
+  h1 { font-size: 26px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+  .subtitle { color: #64748b; font-size: 13px; margin-bottom: 32px; }
+  h2 { font-size: 16px; font-weight: 700; color: #0f172a; margin: 32px 0 14px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+  h3 { font-size: 13px; font-weight: 700; color: #1e3a8a; margin: 16px 0 8px; }
+
+  /* Start banner */
+  .banner { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); color: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 32px; display: flex; align-items: center; gap: 16px; }
+  .banner-icon { font-size: 40px; flex-shrink: 0; }
+  .banner h3 { color: #fff; margin: 0 0 4px; font-size: 17px; }
+  .banner p { color: #94a3b8; font-size: 13px; margin: 0; }
+
+  /* Credentials */
+  .cred-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 8px; }
+  .cred-card { border-radius: 8px; padding: 14px 16px; border: 1px solid; }
+  .cred-admin { background: #fff1f2; border-color: #fecdd3; }
+  .cred-supplier { background: #fffbeb; border-color: #fde68a; }
+  .cred-client { background: #eff6ff; border-color: #bfdbfe; }
+  .cred-role { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+  .cred-admin .cred-role { color: #dc2626; }
+  .cred-supplier .cred-role { color: #d97706; }
+  .cred-client .cred-role { color: #1a56db; }
+  .cred-email { font-family: monospace; font-size: 12px; color: #1a202c; font-weight: 600; }
+  .cred-pw { font-family: monospace; font-size: 12px; color: #64748b; }
+
+  /* Steps */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid #f1f5f9; }
+  .step:last-child { border-bottom: none; }
+  .step-num { width: 30px; height: 30px; border-radius: 50%; background: #1e3a8a; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; margin-top: 2px; }
+  .step-body { flex: 1; }
+  .step-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .step-role { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 20px; margin-bottom: 6px; }
+  .role-admin { background: #fee2e2; color: #dc2626; }
+  .role-supplier { background: #fef3c7; color: #d97706; }
+  .role-client { background: #dbeafe; color: #1a56db; }
+  .step-desc { font-size: 13px; color: #374151; margin-bottom: 6px; }
+  .step-actions { font-size: 12px; color: #64748b; }
+  .step-actions li { margin-left: 16px; margin-bottom: 2px; }
+  .step-url { font-family: monospace; font-size: 11.5px; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; color: #475569; }
+  .proves { font-size: 11px; background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 20px; font-weight: 600; display: inline-block; margin-top: 4px; }
+
+  /* Coverage table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 8px; }
+  th { text-align: left; padding: 8px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; border-bottom: 2px solid #e2e8f0; font-weight: 700; }
+  td { padding: 9px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .yes { color: #059669; font-weight: 700; }
+  .partial { color: #d97706; font-weight: 700; }
+  .deferred { color: #94a3b8; }
+  .req-section { font-weight: 600; color: #1e3a8a; }
+
+  /* Quick URL box */
+  .url-box { background: #0f172a; color: #a5f3fc; border-radius: 8px; padding: 14px 18px; font-family: monospace; font-size: 13px; margin-bottom: 8px; line-height: 2; }
+  .url-label { color: #64748b; font-size: 11px; font-family: sans-serif; margin-bottom: 6px; font-weight: 600; }
+
+  footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="banner">
+    <div class="banner-icon">🌍</div>
+    <div>
+      <h3>TINE AI Data Platform — POC Demo</h3>
+      <p>African Language &amp; Cultural Dataset Management · FastAPI + React + SQLite</p>
+    </div>
+  </div>
+
+  <h1>Test Guide &amp; Requirements Coverage</h1>
+  <p class="subtitle">Step-by-step walkthrough · Demo login credentials · Full RUD §1–21 coverage map</p>
+
+  
+  <h2>Start the App</h2>
+  <div class="url-label">Run these two commands in separate terminals, then open your browser:</div>
+  <div class="url-box">
+    # Terminal 1 — Backend<br />
+    cd D:\IBM\TineAI\tineai-poc\backend<br />
+    uvicorn app.main:app --reload --port 8500<br /><br />
+    # Terminal 2 — Frontend<br />
+    cd D:\IBM\TineAI\tineai-poc\frontend<br />
+    npm run dev
+  </div>
+  <div class="url-box" style="font-size:12px;line-height:1.9;background:#1e293b">
+    App (React UI)    →  http://localhost:3000<br />
+    API Docs (Swagger) →  http://localhost:8500/docs
+  </div>
+
+  
+  <h2>Demo Login Accounts</h2>
+  <div class="cred-grid">
+    <div class="cred-card cred-admin">
+      <div class="cred-role">Admin — Amara Diallo</div>
+      <div class="cred-email">admin@tineai.com</div>
+      <div class="cred-pw">password: admin123</div>
+    </div>
+    <div class="cred-card cred-supplier">
+      <div class="cred-role">Supplier — Kofi Mensah</div>
+      <div class="cred-email">supplier@tineai.com</div>
+      <div class="cred-pw">password: supplier123</div>
+    </div>
+    <div class="cred-card cred-client">
+      <div class="cred-role">Client — Dr. Sarah Chen</div>
+      <div class="cred-email">client@aichina.ai</div>
+      <div class="cred-pw">password: client123</div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:#64748b;margin-top:6px">All three accounts are on the Login page as quick-fill buttons — no typing needed.</p>
+
+  
+  <h2>10-Minute Demo Walkthrough</h2>
+  <div class="steps">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Login as Admin &amp; review Dashboard</div>
+        <span class="step-role role-admin">Admin</span>
+        <div class="step-desc">Click the <strong>Admin</strong> quick-fill button on the login screen, then sign in. The dashboard shows dataset counts (total, approved, under review, uploaded), active suppliers/clients, recent audit activity, and the African language coverage banner.</div>
+        <ul class="step-actions">
+          <li>Observe stat cards: 6 datasets seeded across Yoruba, Swahili, Cameroonian French, Amharic, Zulu, Hausa</li>
+          <li>See the "TINE AI Controlled" badge in the top-right — emphasises central control</li>
+        </ul>
+        <div class="proves">Proves: Central control layer exists</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Browse &amp; filter Datasets</div>
+        <span class="step-role role-admin">Admin</span>
+        <div class="step-desc">Go to <strong>Datasets</strong> in the sidebar. Six African-language datasets are listed. Use the filters to narrow by status, type, or language.</div>
+        <ul class="step-actions">
+          <li>Filter by <strong>Status: approved</strong> — shows 3 datasets (Yoruba, Cameroonian French, Zulu)</li>
+          <li>Filter by <strong>Type: audio</strong> — shows audio-only entries</li>
+          <li>Filter by <strong>Language: Hausa</strong> — shows the image dataset</li>
+        </ul>
+        <div class="proves">Proves: Dataset listing, search &amp; filtering (RUD §6.3)</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">View a Data Card</div>
+        <span class="step-role role-admin">Admin</span>
+        <div class="step-desc">Click the <strong>Swahili News Broadcast Archive</strong> (status: Under Review). The Data Card shows all metadata fields from RUD §7.</div>
+        <ul class="step-actions">
+          <li>Language, country, dialect, cultural context, source, file size, format</li>
+          <li>AI transcription output box (pre-computed Swahili text + translation)</li>
+          <li>Annotation details, quality score, rights &amp; licensing</li>
+          <li>Workflow sidebar showing current stage highlighted</li>
+        </ul>
+        <div class="proves">Proves: Data Card management (RUD §7)</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">Upload a new Dataset (as Supplier)</div>
+        <span class="step-role role-supplier">Supplier</span>
+        <div class="step-desc">Log out, log in as <strong>Supplier</strong>, then go to <strong>Upload Dataset</strong>. Fill in the form with a new African-language entry.</div>
+        <ul class="step-actions">
+          <li>Name: "Igbo Market Chatter", Type: Audio, Language: Yoruba (or type "Igbo"), Country: Nigeria</li>
+          <li>Add dialect, cultural context, source, rights info</li>
+          <li>File is optional — submit without a file to demo metadata-only upload</li>
+          <li>Dataset appears in the list with status <strong>Uploaded</strong></li>
+        </ul>
+        <div class="proves">Proves: Supplier upload flow (RUD §4.2, §6)</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <div class="step-title">Run the Processing Workflow + AI Enrichment</div>
+        <span class="step-role role-admin">Admin</span>
+        <div class="step-desc">Log back in as <strong>Admin</strong>. Open the dataset you just uploaded (status: Uploaded). Walk through each workflow step.</div>
+        <ul class="step-actions">
+          <li>Click <strong>"Start Processing"</strong> → status moves to Processing</li>
+          <li>Click <strong>"Run AI Enrichment"</strong> → transcription &amp; dialect annotation appear instantly (realistic African-language mock output)</li>
+          <li>Status automatically advances to <strong>Under Review</strong></li>
+          <li>Now click <strong>"Approve Dataset"</strong> → status becomes Approved, audit entry created</li>
+          <li>Alternative: click <strong>"Reject"</strong>, enter a reason — shows rejection reason on the card</li>
+        </ul>
+        <div class="proves">Proves: Processing workflow, AI enrichment, TINE AI approval authority (RUD §8, §8.3, §9)</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <div class="step-title">Assign Dataset to a Client Project</div>
+        <span class="step-role role-admin">Admin</span>
+        <div class="step-desc">Go to <strong>Assignments</strong>. Click <strong>New Assignment</strong>.</div>
+        <ul class="step-actions">
+          <li>Select Client: <strong>Dr. Sarah Chen</strong></li>
+          <li>Select Dataset: the one you just approved</li>
+          <li>Project: "Lagos Speech Recognition V2", License: Research</li>
+          <li>Submit — assignment appears in the table with Active status</li>
+        </ul>
+        <div class="proves">Proves: Client/project assignment, licensing (RUD §5, §10.1, §14)</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <div class="step-title">Client Portal — scoped view</div>
+        <span class="step-role role-client">Client</span>
+        <div class="step-desc">Log out, log in as <strong>Client (Dr. Sarah Chen)</strong>. Go to <strong>Client Portal</strong>.</div>
+        <ul class="step-actions">
+          <li>Only datasets assigned to her projects are visible — no other data</li>
+          <li>Each card shows project name, license type, permitted use, access expiry</li>
+          <li>The info banner reads: <em>"Access Controlled by TINE AI"</em></li>
+          <li>Click <strong>"View Data Card"</strong> to see the full dataset details</li>
+        </ul>
+        <div class="proves">Proves: Client-scoped access, isolation from other data (RUD §4.3, §5, §10.3)</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">8</div>
+      <div class="step-body">
+        <div class="step-title">Generate API Key &amp; Test Live API Call</div>
+        <span class="step-role role-client">Client</span>
+        <div class="step-desc">Go to <strong>API Access</strong>. This is the "wow" moment for a technical audience.</div>
+        <ul class="step-actions">
+          <li>Click <strong>"Generate API Key"</strong> — a <code>tine_xxx...</code> key appears with a copy button</li>
+          <li>Copy the key, paste it into the <strong>Live API Demo</strong> panel below</li>
+          <li>Enter a Dataset ID (e.g. <strong>1</strong> or <strong>2</strong>) in the second box</li>
+          <li>Click <strong>"Test API Call"</strong> — real authenticated HTTP call fires, JSON response renders instantly</li>
+          <li>Response includes: dataset name, language, dialect, version, transcription sample, quality score, license</li>
+          <li>Try a wrong key or unassigned dataset ID — see 401/403 error responses</li>
+        </ul>
+        <div class="proves">Proves: API-based access model, key auth, access control enforcement (RUD §10, §10.3)</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">9</div>
+      <div class="step-body">
+        <div class="step-title">Review Audit Log</div>
+        <span class="step-role role-admin">Admin</span>
+        <div class="step-desc">Log back in as <strong>Admin</strong>. Go to <strong>Audit Log</strong>. Every action from the demo is recorded.</div>
+        <ul class="step-actions">
+          <li>See UPLOAD_DATASET, STATUS_CHANGE, AI_ENRICH, ASSIGN_DATASET, GENERATE_API_KEY, API_ACCESS entries</li>
+          <li>Click action-filter buttons (e.g. API_ACCESS, AI_ENRICH) to isolate event types</li>
+          <li>Each row shows: timestamp, actor name, role, action, entity type &amp; ID, full detail text</li>
+        </ul>
+        <div class="proves">Proves: Full audit trail — who did what and when (RUD §16)</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">10</div>
+      <div class="step-body">
+        <div class="step-title">User Management (bonus)</div>
+        <span class="step-role role-admin">Admin</span>
+        <div class="step-desc">Go to <strong>Users</strong>. Shows all 5 seeded users with role badges.</div>
+        <ul class="step-actions">
+          <li>Click <strong>"Add User"</strong> to create a new supplier or client</li>
+          <li>Toggle the Active/Suspended switch on any user to demonstrate access revocation</li>
+        </ul>
+        <div class="proves">Proves: User/role management, suspension/revocation (RUD §4.1, §15.3)</div>
+      </div>
+    </div>
+
+  </div>
+
+  
+  <h2>RUD Requirements Coverage</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:180px">RUD Section</th>
+        <th style="width:80px">Status</th>
+        <th>What's in the POC</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="req-section">§2 Platform Objective<br /><span style="font-weight:400;color:#64748b">Full dataset lifecycle</span></td><td class="yes">✔ In POC</td><td>Upload → Processing → Under Review → Approved lifecycle with state machine enforced in backend</td></tr>
+      <tr><td class="req-section">§3 African Focus<br /><span style="font-weight:400;color:#64748b">Languages, dialects, accents</span></td><td class="yes">✔ In POC</td><td>6 seeded datasets: Yoruba, Swahili, Amharic, Cameroonian French, Zulu, Hausa. Language/dialect/cultural context on every Data Card</td></tr>
+      <tr><td class="req-section">§4.1 Admin Role</td><td class="yes">✔ In POC</td><td>Full admin: manage users, datasets, workflow, assignments, audit. JWT-protected admin-only routes</td></tr>
+      <tr><td class="req-section">§4.2 Supplier Role</td><td class="yes">✔ In POC</td><td>Supplier login, upload form, sees only own datasets. Cannot approve or assign</td></tr>
+      <tr><td class="req-section">§4.3 Client Role</td><td class="yes">✔ In POC</td><td>Client portal scoped to assignments only. API key generation and live access endpoint</td></tr>
+      <tr><td class="req-section">§5 Two-Sided Platform</td><td class="yes">✔ In POC</td><td>Supplier side ↔ TINE AI control layer ↔ Client side enforced via role-based route guards</td></tr>
+      <tr><td class="req-section">§6 Dataset Management<br /><span style="font-weight:400;color:#64748b">Audio, video, image</span></td><td class="yes">✔ In POC</td><td>All 3 types supported. Upload, list, filter by status/language/type, versioning field, restriction status</td></tr>
+      <tr><td class="req-section">§7 Data Card</td><td class="yes">✔ In POC</td><td>Full Data Card: name, description, type, language, country, dialect, cultural context, source, size, format, annotation, transcription, translation, quality score, rights, permitted uses, version, status</td></tr>
+      <tr><td class="req-section">§8 Processing &amp; Enrichment</td><td class="yes">✔ In POC</td><td>AI enrichment step (Whisper mock with real African-language output), annotation tagging, quality score. Human review step is the Under Review stage</td></tr>
+      <tr><td class="req-section">§8.3 Final Approval Authority</td><td class="yes">✔ In POC</td><td>Only Admin can approve/reject. No dataset reaches a client without Approved status — enforced in assignment API</td></tr>
+      <tr><td class="req-section">§9 Dataset Lifecycle</td><td class="yes">✔ In POC</td><td>uploaded → processing → under_review → approved → restricted. Reject path with reason. All transitions logged</td></tr>
+      <tr><td class="req-section">§10 Client Access &amp; API</td><td class="yes">✔ In POC</td><td>API key issuance, authenticated REST endpoint, 401/403 on invalid key or unassigned dataset, returns metadata + transcription sample</td></tr>
+      <tr><td class="req-section">§11 Dataset Versioning</td><td class="partial">~ Partial</td><td>Version field on every dataset (v1.0, v1.2, v2.1). Manual version setting on upload. Full version-replacement logic is MVP scope</td></tr>
+      <tr><td class="req-section">§12 African Language Metadata</td><td class="yes">✔ In POC</td><td>Language, dialect, accent, cultural context, country-specific terminology all captured in Data Card fields</td></tr>
+      <tr><td class="req-section">§13 AI Model Requirements</td><td class="partial">~ Partial</td><td>One enrichment step demonstrated (transcription/dialect tagging). Full model training pipeline is MVP/Phase 2. Whisper noted as open-source candidate</td></tr>
+      <tr><td class="req-section">§14 Rights &amp; Licensing</td><td class="yes">✔ In POC</td><td>Rights info and permitted uses on Data Card. License type (Research/Commercial/Non-Commercial), permitted use, access expiry on every assignment</td></tr>
+      <tr><td class="req-section">§15 Security &amp; Auth</td><td class="yes">✔ In POC</td><td>JWT auth, bcrypt password hashing, role-based access control on every endpoint, API key hashed with SHA-256, supplier/client isolation enforced</td></tr>
+      <tr><td class="req-section">§16 Audit &amp; Monitoring</td><td class="yes">✔ In POC</td><td>Append-only audit log on every state change: uploads, status changes, enrichment, approvals, assignments, API key generation, API access events, user creation</td></tr>
+      <tr><td class="req-section">§17 Mockup &amp; Demo</td><td class="yes">✔ In POC</td><td>10 connected screens covering every required workflow: dashboard, upload, data card, dataset listing, approval, client portal, assignments, API access, audit log, user management</td></tr>
+      <tr><td class="req-section">§19.1 MVP Scope</td><td class="yes">✔ In POC</td><td>All MVP scope items demonstrated: auth, user/role mgmt, supplier mgmt, client mgmt, dataset mgmt, upload, Data Card, processing workflow, approval, versioning, rights, assignment, API access, audit, search/filter</td></tr>
+      <tr><td class="req-section">§19.2 Later Phase Features</td><td class="deferred">Deferred</td><td>Marketplace, billing, payments, advanced analytics, streaming — correctly deferred. Closing slide material for the demo</td></tr>
+      <tr><td class="req-section">§20 Open Items</td><td class="deferred">Noted</td><td>Cloud provider, storage architecture, AI governance (IBM), model selection, file size limits — all flagged as open in the demo narrative. Not built in POC intentionally</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Swagger API Testing (Alternative)</h2>
+  <p style="font-size:13px;color:#374151;margin-bottom:10px">Open <strong>http://localhost:8500/docs</strong> for the interactive Swagger UI. You can test every endpoint directly:</p>
+  <ul style="font-size:13px;color:#374151;margin-left:20px;line-height:2">
+    <li><strong>POST /api/auth/token</strong> — login, get JWT token</li>
+    <li><strong>GET /api/datasets/</strong> — list datasets (use Authorize button with Bearer token)</li>
+    <li><strong>PATCH /api/datasets/{id}/status</strong> — advance workflow state</li>
+    <li><strong>PATCH /api/datasets/{id}/enrich</strong> — trigger AI enrichment</li>
+    <li><strong>POST /api/access/assign</strong> — assign dataset to client</li>
+    <li><strong>POST /api/access/apikeys/generate</strong> — generate API key</li>
+    <li><strong>GET /api/access/datasets/{id}/data?api_key=...</strong> — test API key access</li>
+    <li><strong>GET /api/audit/</strong> — view full audit trail</li>
+  </ul>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>
