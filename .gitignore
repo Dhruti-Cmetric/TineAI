@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+env/
+ENV/
+virtualenv/
+
+# IDE
+.vscode/
+.idea/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# Logs
+*.log
+logs/
+
+# Generated/cache files
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+dist/
+build/
+
+# Project generated data
+results/
+work/
+workdir/
+uploads/
+outputs/
+generated/
+data/
+datasets/
+
+# Video/media files
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.initineai-poc/backend/uploads/
+*.mp4
+node_modules/
