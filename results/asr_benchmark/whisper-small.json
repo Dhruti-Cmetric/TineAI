@@ -1,0 +1,10 @@
+{
+  "model": "whisper-small",
+  "audio_seconds": 30.0,
+  "inference_seconds": 0.14352930002496578,
+  "real_time_factor": 0.004784310000832193,
+  "text": "",
+  "segments": [],
+  "wer": null,
+  "cer": null
+}

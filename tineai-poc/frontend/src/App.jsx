@@ -19,6 +19,9 @@ import HumanReview from './pages/HumanReview'
 import Versioning from './pages/Versioning'
 import Projects from './pages/Projects'
 import AccessControlDemo from './pages/AccessControlDemo'
+import ModelRegistry from './pages/ModelRegistry'
+import PipelineMonitor from './pages/PipelineMonitor'
+import FineTuning from './pages/FineTuning'
 
 function PrivateRoute({ children }) {
   return localStorage.getItem('token') ? children : <Navigate to="/login" replace />
@@ -46,6 +49,9 @@ export default function App() {
           <Route path="datasets/:id/versions" element={<Versioning />} />
           <Route path="upload" element={<Upload />} />
           <Route path="datacard/create" element={<DataCardCreate />} />
+          <Route path="models" element={<ModelRegistry />} />
+          <Route path="pipeline" element={<PipelineMonitor />} />
+          <Route path="finetuning" element={<FineTuning />} />
           <Route path="approvals" element={<Approvals />} />
           <Route path="users" element={<Users />} />
           <Route path="assignments" element={<Assignments />} />

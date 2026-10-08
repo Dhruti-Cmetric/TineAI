@@ -37,9 +37,14 @@ export default function Datasets() {
           <p className="text-muted text-sm mt-2">{datasets.length} dataset{datasets.length !== 1 ? 's' : ''} found</p>
         </div>
         {(role === 'admin' || role === 'supplier') && (
-          <button className="btn btn-primary" onClick={() => nav('/upload')}>
-            <Plus size={14} /> Upload Dataset
-          </button>
+          <div style={{ display:'flex', gap:8 }}>
+            <button className="btn btn-outline" onClick={() => nav('/datacard/create')}>
+              <Plus size={14} /> Create Data Card
+            </button>
+            <button className="btn btn-primary" onClick={() => nav('/upload')}>
+              <Plus size={14} /> Upload Dataset
+            </button>
+          </div>
         )}
       </div>
 

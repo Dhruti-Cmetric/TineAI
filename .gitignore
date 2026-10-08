@@ -107,3 +107,7 @@ datasets/
 # Coverage
 # =========================
 coverage/
+# Uploaded media
+tineai-poc/backend/uploads/
+*.mp4tineai-poc/backend/uploads/
+*.mp4

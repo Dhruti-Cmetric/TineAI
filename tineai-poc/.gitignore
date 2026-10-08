@@ -1,6 +1,17 @@
-# =========================
-# Environment & Secrets
-# =========================
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+env/
+ENV/
+virtualenv/
+
+# IDE
+.vscode/
+.idea/
+
+# Environment and secrets
 .env
 .env.*
 !.env.example
@@ -10,100 +21,44 @@
 *.pfx
 secrets/
 credentials/
-config/secrets*
 
-# =========================
-# Python
-# =========================
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-
-# Virtual environments
-venv/
-.venv/
-env/
-ENV/
-virtualenv/
-
-# Python tooling
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-htmlcov/
-.tox/
-.nox/
-
-# =========================
-# Node.js
-# =========================
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-pnpm-debug.log*
-
-# =========================
-# IDE / Editors
-# =========================
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# =========================
-# OS files
-# =========================
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# =========================
 # Logs
-# =========================
 *.log
 logs/
 
-# =========================
-# Build / Cache
-# =========================
+# Generated/cache files
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
 dist/
 build/
-.cache/
-.tmp/
-temp/
-tmp/
 
-# =========================
-# Generated files
-# =========================
-*.pyc
-*.pyo
-*.pyd
-
-# =========================
-# Local databases
-# =========================
-*.sqlite
-*.sqlite3
-*.db
-
-# =========================
-# Large / generated data
-# =========================
+# Project generated data
+results/
+work/
+workdir/
 uploads/
 outputs/
 generated/
 data/
 datasets/
 
-# =========================
-# Jupyter
-# =========================
-.ipynb_checkpoints/
+# Video/media files
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
 
-# =========================
-# Coverage
-# =========================
-coverage/
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.initineai-poc/backend/uploads/
+*.mp4
+node_modules/

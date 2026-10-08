@@ -1,0 +1,19 @@
+{
+  "input": "my-video.mp4",
+  "sample_seconds": 30,
+  "language": "sw",
+  "results": [
+    {
+      "model": "whisper-small",
+      "status": "success",
+      "audio_seconds": 30.0,
+      "inference_seconds": 0.144,
+      "total_seconds": 0.144,
+      "real_time_factor": 0.0048,
+      "wer": null,
+      "cer": null,
+      "prediction_file": "results\\asr_benchmark\\whisper-small.json",
+      "error": ""
+    }
+  ]
+}

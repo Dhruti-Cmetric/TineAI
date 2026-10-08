@@ -1,3 +1,4 @@
+# --- Core API ---
 fastapi==0.111.0
 uvicorn[standard]==0.29.0
 sqlalchemy==2.0.30
@@ -5,7 +6,61 @@ alembic==1.13.1
 psycopg2-binary==2.9.9
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
 python-multipart==0.0.9
 pydantic[email]==2.7.1
 pydantic-settings==2.2.1
 python-dotenv==1.0.1
+
+# --- Async task queue ---
+celery==5.4.0
+redis==5.0.4
+flower==2.0.1          # Celery monitoring UI
+
+# --- Speech-to-Text ---
+openai-whisper==20231117
+faster-whisper==1.0.3   # faster CTranslate2-based Whisper
+transformers>=4.40.0
+accelerate>=0.29.0
+torch>=2.2.0
+torchaudio>=2.2.0
+scipy>=1.13.0
+
+# --- Speaker Diarization ---
+pyannote.audio==3.3.2
+pyannote.core==5.0.0
+pyannote.pipeline==3.0.1
+
+# --- Translation (NLLB-200) & SeamlessM4T ---
+sentencepiece>=0.2.0
+protobuf>=4.25.0
+# facebook/seamless-m4t-v2-large uses transformers above
+
+# --- Text Understanding ---
+# AfriBERTa / AfriqueLLM / InkubaLM load via transformers
+
+# --- TTS ---
+# facebook/mms-tts loads via transformers + torch above
+
+# --- Language Identification ---
+fasttext-wheel==0.9.2   # fastText bindings (wheel avoids C++ build)
+
+# --- OCR ---
+paddlepaddle==2.6.1
+paddleocr==2.7.3
+pytesseract==0.3.10
+Pillow>=10.3.0
+
+# --- Image / Video ---
+opencv-python-headless>=4.9.0
+# ffmpeg must be installed at OS level (not a pip package)
+
+# --- Audio Quality ---
+librosa>=0.10.1
+soundfile>=0.12.1
+numpy>=1.26.0
+
+# --- Misc utilities ---
+huggingface-hub>=0.22.0
+datasets>=2.19.0
+evaluate>=0.4.1

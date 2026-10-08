@@ -6,8 +6,8 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      '/api': 'http://localhost:8001',
-      '/uploads': 'http://localhost:8001',
+      '/api': 'http://localhost:8002',
+      '/uploads': 'http://localhost:8002',
     }
   }
 })

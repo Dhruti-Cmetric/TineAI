@@ -1,11 +1,13 @@
 import os, uuid
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Query
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
 from app.database import get_db
 from app.models.models import Dataset, DatasetStatus, DatasetVersion, ProcessingTask, Review, AuditLog, User, VALID_TRANSITIONS
+from app.models.pipeline_models import PipelineJob, PipelineStep
+from app.routers.pipeline import DATA_TYPE_STEPS
 from app.auth import get_current_user, require_admin
 from app.config import settings
 
@@ -16,8 +18,8 @@ class DatasetOut(BaseModel):
     name: str
     description: Optional[str]
     data_type: str
-    language: str
-    country: str
+    language: Optional[str]
+    country: Optional[str]
     dialect: Optional[str]
     accent: Optional[str]
     cultural_context: Optional[str]
@@ -70,26 +72,111 @@ def list_datasets(
         q = q.filter(Dataset.data_type == data_type)
     return q.order_by(Dataset.created_at.desc()).all()
 
+def _auto_trigger_pipeline(dataset_id: int, data_type: str, file_path: str,
+                            user_id: int, tgt_lang: str = "eng_Latn"):
+    """
+    Run in BackgroundTasks — opens its OWN DB session.
+    Step 1: fast inline language + region detection (whisper, no full transcription).
+    Step 2: create pipeline job and enqueue to Celery.
+    """
+    import logging
+    _log = logging.getLogger(__name__)
+    from app.database import SessionLocal
+    from app.models.models import Dataset as DS
+
+    db2 = SessionLocal()
+    try:
+        # ── Step 1: auto-detect language & region from audio/video ──────────
+        if file_path and data_type in ("audio", "video"):
+            try:
+                from app.worker import detect_language_and_region
+                detected = detect_language_and_region(file_path, data_type)
+                ds2 = db2.query(DS).filter(DS.id == dataset_id).first()
+                if ds2 and detected.get("language"):
+                    # Only overwrite fields the user left blank (None/empty/"auto")
+                    _blank = (None, "", "Unknown", "Other", "auto")
+                    if ds2.language in _blank:
+                        ds2.language = detected["language"]
+                    if detected.get("country") and ds2.country in _blank:
+                        ds2.country = detected["country"]
+                    if detected.get("dialect") and ds2.dialect in _blank:
+                        ds2.dialect = detected["dialect"]
+                    # Store the raw detection metadata in collection_details
+                    import json
+                    meta = json.dumps({
+                        "auto_lang_detect": {
+                            "language_code": detected.get("language_code"),
+                            "language_name": detected.get("language"),
+                            "country":       detected.get("country"),
+                            "dialect":       detected.get("dialect"),
+                            "confidence":    detected.get("confidence"),
+                        }
+                    })
+                    if not ds2.collection_details:
+                        ds2.collection_details = meta
+                    db2.commit()
+                    _log.info("Auto lang-detect saved: ds=%d lang=%s country=%s conf=%.2f",
+                              dataset_id, detected.get("language"), detected.get("country"),
+                              detected.get("confidence", 0))
+            except Exception as e:
+                _log.warning("Inline lang-detect failed: %s", e)
+
+        # ── Step 2: create pipeline job ──────────────────────────────────────
+        steps = DATA_TYPE_STEPS.get(data_type, [])
+        if not steps:
+            return
+        job = PipelineJob(
+            dataset_id=dataset_id,
+            triggered_by_id=user_id,
+            status="pending",
+            pipeline_config={"tgt_lang": tgt_lang, "auto_triggered": True},
+        )
+        db2.add(job)
+        db2.flush()
+        for task_type in steps:
+            db2.add(PipelineStep(job_id=job.id, task_type=task_type,
+                                 status="pending", input_ref=file_path))
+        ds3 = db2.query(DS).filter(DS.id == dataset_id).first()
+        if ds3:
+            ds3.status = DatasetStatus.processing
+        db2.commit()
+
+        # ── Step 3: enqueue to Celery (non-blocking) ─────────────────────────
+        try:
+            from app.worker import run_full_pipeline
+            run_full_pipeline.delay(job.id)
+        except Exception:
+            pass  # no broker — stays pending, manually retried via UI
+
+    except Exception as e:
+        _log.warning("Auto-pipeline trigger failed: %s", e)
+    finally:
+        db2.close()
+
+
 @router.post("/upload", response_model=DatasetOut)
 async def upload_dataset(
+    background_tasks: BackgroundTasks,
     name: str = Form(...),
-    description: str = Form(""),
-    data_type: str = Form(...),
-    language: str = Form(...),
-    country: str = Form(...),
-    dialect: str = Form(""),
-    accent: str = Form(""),
-    cultural_context: str = Form(""),
-    collection_details: str = Form(""),
-    source: str = Form(""),
-    rights_info: str = Form(""),
-    permitted_uses: str = Form(""),
-    restrictions: str = Form(""),
-    privacy_info: str = Form(""),
-    annotation_details: str = Form(""),
-    version: str = Form("1.0"),
-    file_formats: str = Form(""),
+    description: Optional[str] = Form(None),
+    data_type: str = Form("audio"),
+    language: Optional[str] = Form(None),   # None/blank = auto-detect from audio/video
+    country: Optional[str] = Form(None),    # None/blank = auto-detect from audio/video
+    dialect: Optional[str] = Form(None),
+    accent: Optional[str] = Form(None),
+    cultural_context: Optional[str] = Form(None),
+    collection_details: Optional[str] = Form(None),
+    source: Optional[str] = Form(None),
+    rights_info: Optional[str] = Form(None),
+    permitted_uses: Optional[str] = Form(None),
+    restrictions: Optional[str] = Form(None),
+    privacy_info: Optional[str] = Form(None),
+    annotation_details: Optional[str] = Form(None),
+    version: Optional[str] = Form("1.0"),
+    file_formats: Optional[str] = Form(None),
     file_size_mb: float = Form(0.0),
+    tgt_lang: str = Form("eng_Latn"),
+    auto_pipeline: bool = Form(True),
     file: UploadFile = File(None),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
@@ -101,20 +188,32 @@ async def upload_dataset(
         ext = os.path.splitext(file.filename)[1]
         fname = f"{uuid.uuid4()}{ext}"
         fpath = os.path.join(settings.UPLOAD_DIR, fname)
-        with open(fpath, "wb") as f:
-            content = await file.read()
-            f.write(content)
-        file_size = round(len(content) / 1024 / 1024, 2)
+        # Stream to disk in 4MB chunks — never loads full file into RAM
+        written = 0
+        with open(fpath, "wb") as out:
+            while True:
+                chunk = await file.read(4 * 1024 * 1024)  # 4 MB
+                if not chunk:
+                    break
+                out.write(chunk)
+                written += len(chunk)
+        file_size = round(written / 1024 / 1024, 2)
         file_path = fpath
         file_fmt = ext.lstrip(".")
 
+    # Normalise: treat empty strings the same as None for optional fields
+    def _s(v): return v.strip() if isinstance(v, str) and v.strip() else None
+
     ds = Dataset(
-        name=name, description=description, data_type=data_type,
-        language=language, country=country, dialect=dialect, accent=accent,
-        cultural_context=cultural_context, collection_details=collection_details,
-        source=source, rights_info=rights_info, permitted_uses=permitted_uses,
-        restrictions=restrictions, privacy_info=privacy_info,
-        annotation_details=annotation_details or None,
+        name=name, description=_s(description), data_type=data_type,
+        language=_s(language),   # None = will be filled by auto-detect
+        country=_s(country),     # None = will be filled by auto-detect
+        dialect=_s(dialect), accent=_s(accent),
+        cultural_context=_s(cultural_context),
+        collection_details=_s(collection_details),
+        source=_s(source), rights_info=_s(rights_info),
+        permitted_uses=_s(permitted_uses), restrictions=_s(restrictions),
+        privacy_info=_s(privacy_info), annotation_details=_s(annotation_details),
         version=version or "1.0",
         file_path=file_path,
         file_size_mb=file_size if file_size > 0 else (file_size_mb or 0.0),
@@ -124,17 +223,19 @@ async def upload_dataset(
     db.add(ds)
     db.commit()
     db.refresh(ds)
-    # Create initial processing tasks for audio
-    if ds.data_type == "audio":
-        for task_type in ["transcription", "diarization", "quality_check"]:
-            task = ProcessingTask(dataset_id=ds.id, task_type=task_type,
-                                  status="pending", file_name=file.filename if file and file.filename else "sample.wav")
-            db.add(task)
-        db.commit()
     log = AuditLog(actor_id=user.id, actor_name=user.name, actor_role=user.role,
                    action="UPLOAD_DATASET", entity_type="Dataset", entity_id=str(ds.id),
-                   detail=f"Uploaded dataset '{ds.name}' ({ds.language}, {ds.country})")
-    db.add(log); db.commit()
+                   detail=f"Uploaded dataset '{ds.name}' ({ds.language}, {ds.country}, {ds.data_type})")
+    db.add(log)
+    db.commit()
+
+    # Auto-trigger full ML pipeline in background
+    if auto_pipeline and file_path and ds.data_type in ("audio", "video", "image", "text", "document"):
+        background_tasks.add_task(
+            _auto_trigger_pipeline,
+            ds.id, ds.data_type, file_path, user.id, tgt_lang
+        )
+
     return ds
 
 @router.get("/{dataset_id}", response_model=DatasetOut)
@@ -143,6 +244,50 @@ def get_dataset(dataset_id: int, db: Session = Depends(get_db), user=Depends(get
     if not ds:
         raise HTTPException(404, "Dataset not found")
     return ds
+
+
+class DataCardUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    data_type: Optional[str] = None
+    language: Optional[str] = None
+    country: Optional[str] = None
+    dialect: Optional[str] = None
+    accent: Optional[str] = None
+    cultural_context: Optional[str] = None
+    collection_details: Optional[str] = None
+    source: Optional[str] = None
+    rights_info: Optional[str] = None
+    permitted_uses: Optional[str] = None
+    restrictions: Optional[str] = None
+    privacy_info: Optional[str] = None
+    annotation_details: Optional[str] = None
+    version: Optional[str] = None
+    file_formats: Optional[str] = None
+
+@router.patch("/{dataset_id}", response_model=DatasetOut)
+def update_datacard(
+    dataset_id: int,
+    body: DataCardUpdate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    ds = db.query(Dataset).filter(Dataset.id == dataset_id).first()
+    if not ds:
+        raise HTTPException(404, "Dataset not found")
+    # suppliers can only edit their own
+    if user.role == "supplier" and ds.supplier_id != user.id:
+        raise HTTPException(403, "Not your dataset")
+    for field, value in body.model_dump(exclude_unset=True).items():
+        setattr(ds, field, value)
+    db.commit()
+    db.refresh(ds)
+    log = AuditLog(actor_id=user.id, actor_name=user.name, actor_role=user.role,
+                   action="DATACARD_UPDATE", entity_type="Dataset", entity_id=str(ds.id),
+                   detail=f"Data Card updated for '{ds.name}'")
+    db.add(log); db.commit()
+    return ds
+
 
 @router.patch("/{dataset_id}/status")
 def update_status(

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Database, Users, CheckCircle, Clock, Upload, Globe2, Activity } from 'lucide-react'
+import { Database, Users, CheckCircle, Clock, Upload, Globe2, Activity, Zap, XCircle, PlayCircle } from 'lucide-react'
 import api from '../api/client'
 
 const role = () => localStorage.getItem('role')
@@ -8,11 +8,13 @@ const role = () => localStorage.getItem('role')
 export default function Dashboard() {
   const [stats, setStats] = useState(null)
   const [userStats, setUserStats] = useState(null)
+  const [pipeStats, setPipeStats] = useState(null)
   const [logs, setLogs] = useState([])
   const nav = useNavigate()
 
   useEffect(() => {
     api.get('/audit/stats').then(r => setStats(r.data)).catch(() => {})
+    api.get('/pipeline/stats').then(r => setPipeStats(r.data)).catch(() => {})
     if (role() === 'admin') {
       api.get('/users/stats').then(r => setUserStats(r.data)).catch(() => {})
       api.get('/audit/?limit=5').then(r => setLogs(r.data)).catch(() => {})
@@ -71,16 +73,55 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* pipeline stats */}
+      {pipeStats && (
+        <div className="card" style={{ marginBottom: 24 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+            <Zap size={15} color="var(--accent)" />
+            <span style={{ fontWeight:700 }}>AI Pipeline Stats</span>
+            <button className="btn btn-ghost btn-sm" style={{ marginLeft:'auto', fontSize:12 }} onClick={() => nav('/pipeline')}>
+              Monitor →
+            </button>
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10 }}>
+            {[
+              { label:'Total Jobs', value: pipeStats.jobs.total, color:'#3b82f6' },
+              { label:'Running', value: pipeStats.jobs.running, color:'#f59e0b' },
+              { label:'Completed', value: pipeStats.jobs.completed, color:'#10b981' },
+              { label:'Failed', value: pipeStats.jobs.failed, color:'#ef4444' },
+            ].map(c => (
+              <div key={c.label} style={{ background:'var(--bg)', padding:'10px 12px', borderRadius:8, textAlign:'center' }}>
+                <div style={{ fontSize:22, fontWeight:800, color:c.color }}>{c.value}</div>
+                <div style={{ fontSize:11, color:'var(--muted)' }}>{c.label}</div>
+              </div>
+            ))}
+          </div>
+          {pipeStats.by_task_type && Object.keys(pipeStats.by_task_type).length > 0 && (
+            <div style={{ marginTop:10, display:'flex', flexWrap:'wrap', gap:6 }}>
+              {Object.entries(pipeStats.by_task_type).map(([tt, cnt]) => (
+                <span key={tt} style={{ fontSize:11, padding:'2px 9px', borderRadius:10, background:'var(--accent-light)', color:'var(--accent)', fontWeight:600 }}>
+                  {tt.replace(/_/g,' ')}: {cnt}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <div style={{ display:'grid', gridTemplateColumns: role() === 'admin' ? '1fr 1fr' : '1fr', gap:20 }}>
         <div className="card">
           <div className="card-title">Dataset Lifecycle</div>
           <div className="workflow-bar">
-            {['Uploaded', 'Processing', 'Review', 'Approved'].map((s, i) => (
+            {['Uploaded', 'Processing', 'Review', 'Approved'].map((s) => (
               <div key={s} className="wf-step done" style={{ fontSize:11 }}>{s}</div>
             ))}
           </div>
           <p className="text-muted text-sm">TINE AI controls every stage — no dataset reaches a client without final approval.</p>
-          <button className="btn btn-outline" style={{ marginTop:12 }} onClick={() => nav('/datasets')}>View All Datasets →</button>
+          <div style={{ display:'flex', gap:8, marginTop:12 }}>
+            <button className="btn btn-outline btn-sm" onClick={() => nav('/datasets')}>Datasets →</button>
+            <button className="btn btn-outline btn-sm" onClick={() => nav('/models')}>Model Registry →</button>
+            <button className="btn btn-outline btn-sm" onClick={() => nav('/finetuning')}>Fine-tuning →</button>
+          </div>
         </div>
 
         {role() === 'admin' && (

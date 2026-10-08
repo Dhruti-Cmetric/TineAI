@@ -1,0 +1,2 @@
+model,status,audio_seconds,inference_seconds,total_seconds,real_time_factor,wer,cer,prediction_file,error
+whisper-small,success,30.0,0.144,0.144,0.0048,,,results\asr_benchmark\whisper-small.json,

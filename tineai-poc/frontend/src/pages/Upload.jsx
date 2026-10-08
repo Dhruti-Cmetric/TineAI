@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Upload as UploadIcon } from 'lucide-react'
+import { Upload as UploadIcon, Wand2 } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
@@ -12,35 +12,63 @@ export default function Upload() {
   })
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState(0)
 
   function update(k, v) { setForm(f => ({...f, [k]: v})) }
+
+  const isAudioVideo = form.data_type === 'audio' || form.data_type === 'video'
 
   async function handleSubmit(e) {
     e.preventDefault()
     setLoading(true)
+    setProgress(0)
     try {
       const fd = new FormData()
       Object.entries(form).forEach(([k, v]) => fd.append(k, v))
       if (file) fd.append('file', file)
-      await api.post('/datasets/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
-      toast.success('Dataset uploaded successfully!')
+      fd.append('auto_pipeline', 'true')
+
+      await api.post('/datasets/upload', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 0,
+        onUploadProgress: e => {
+          if (e.total) setProgress(Math.round((e.loaded / e.total) * 100))
+        }
+      })
+      toast.success('Uploaded! Language auto-detection and pipeline started.')
       nav('/datasets')
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Upload failed')
-    } finally { setLoading(false) }
+    } finally {
+      setLoading(false)
+      setProgress(0)
+    }
   }
 
-  const langs = ['Yoruba', 'Swahili', 'Amharic', 'Hausa', 'Zulu', 'Igbo', 'Cameroonian French', 'Nigerian English', 'Twi', 'Somali', 'Other']
-  const countries = ['Nigeria', 'Kenya', 'Ethiopia', 'Ghana', 'South Africa', 'Cameroon', 'Tanzania', 'Uganda', 'Senegal', 'Egypt', 'Other']
+  const langs = ['Yoruba', 'Swahili', 'Amharic', 'Hausa', 'Zulu', 'Igbo', 'Cameroonian French', 'Nigerian English', 'Twi', 'Somali', 'Tigrinya', 'Wolof', 'Twi', 'Oromo', 'Shona', 'Xhosa', 'Kinyarwanda', 'Lingala', 'Arabic', 'French', 'English', 'Other']
+  const countries = ['Nigeria', 'Kenya', 'Ethiopia', 'Ghana', 'South Africa', 'Cameroon', 'Tanzania', 'Uganda', 'Senegal', 'Egypt', 'Morocco', 'Zimbabwe', 'Rwanda', 'DR Congo', 'Somalia', 'Angola', 'Other']
 
   return (
     <div>
       <div className="page-header">
         <div>
           <h2>Upload Dataset</h2>
-          <p className="text-muted text-sm mt-2">Upload audio, video or image files with metadata to the platform</p>
+          <p className="text-muted text-sm mt-2">Upload audio, video or image files — language and region auto-detected from audio/video</p>
         </div>
       </div>
+
+      {/* auto-detect notice */}
+      {isAudioVideo && (
+        <div style={{ display:'flex', alignItems:'center', gap:10, background:'#eff6ff', border:'1px solid #bfdbfe',
+          borderRadius:8, padding:'10px 14px', marginBottom:16, fontSize:13 }}>
+          <Wand2 size={15} color="#1d4ed8" />
+          <span>
+            <strong style={{ color:'#1d4ed8' }}>Language & Region Auto-Detection:</strong>{' '}
+            Leave Language and Country blank to let Whisper automatically detect them from the {form.data_type} content after upload.
+            You can always override detected values in the Data Card.
+          </span>
+        </div>
+      )}
 
       <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr', gap:20 }}>
         <form onSubmit={handleSubmit}>
@@ -61,25 +89,37 @@ export default function Upload() {
                   <option value="audio">Audio</option>
                   <option value="video">Video</option>
                   <option value="image">Image</option>
+                  <option value="text">Text</option>
+                  <option value="document">Document</option>
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Language *</label>
-                <select className="form-select" value={form.language} onChange={e => update('language', e.target.value)} required>
-                  <option value="">Select language...</option>
+                <label className="form-label">
+                  Language
+                  {isAudioVideo && <span style={{ color:'#1d4ed8', fontSize:11, marginLeft:6, fontWeight:600 }}>✦ Auto-detect if blank</span>}
+                </label>
+                <select className="form-select" value={form.language} onChange={e => update('language', e.target.value)}>
+                  <option value="">{isAudioVideo ? '— Auto-detect from file —' : 'Select language...'}</option>
                   {langs.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Country/Region *</label>
-                <select className="form-select" value={form.country} onChange={e => update('country', e.target.value)} required>
-                  <option value="">Select country...</option>
+                <label className="form-label">
+                  Country/Region
+                  {isAudioVideo && <span style={{ color:'#1d4ed8', fontSize:11, marginLeft:6, fontWeight:600 }}>✦ Auto-detect if blank</span>}
+                </label>
+                <select className="form-select" value={form.country} onChange={e => update('country', e.target.value)}>
+                  <option value="">{isAudioVideo ? '— Auto-detect from file —' : 'Select country...'}</option>
                   {countries.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Dialect / Accent</label>
-                <input className="form-input" value={form.dialect} onChange={e => update('dialect', e.target.value)} placeholder="e.g. Lagos Yoruba, Camfranglais" />
+                <label className="form-label">
+                  Dialect / Accent
+                  {isAudioVideo && <span style={{ color:'#1d4ed8', fontSize:11, marginLeft:6, fontWeight:600 }}>✦ Auto-detect if blank</span>}
+                </label>
+                <input className="form-input" value={form.dialect} onChange={e => update('dialect', e.target.value)}
+                  placeholder={isAudioVideo ? 'Auto-detected from audio' : 'e.g. Lagos Yoruba, Camfranglais'} />
               </div>
             </div>
             <div className="form-group">
@@ -127,8 +167,22 @@ export default function Upload() {
             <p className="text-muted text-sm" style={{ marginTop:8 }}>File is optional for demo — metadata-only datasets are supported.</p>
           </div>
 
-          <button className="btn btn-primary btn-lg" type="submit" disabled={loading} style={{ width:'100%', justifyContent:'center' }}>
-            {loading ? <><span className="spinner" /> Uploading...</> : <><UploadIcon size={16} /> Upload Dataset</>}
+          <button className="btn btn-primary btn-lg" type="submit" disabled={loading} style={{ width:'100%', justifyContent:'center', flexDirection:'column', gap:6 }}>
+            {loading ? (
+              <div style={{ width:'100%' }}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginBottom: progress > 0 && progress < 100 ? 6 : 0 }}>
+                  <span className="spinner" />
+                  {progress > 0 && progress < 100 ? `Uploading... ${progress}%` : progress === 100 ? 'Processing...' : 'Uploading...'}
+                </div>
+                {progress > 0 && (
+                  <div style={{ width:'100%', height:4, background:'rgba(255,255,255,0.3)', borderRadius:2 }}>
+                    <div style={{ width:`${progress}%`, height:'100%', background:'#fff', borderRadius:2, transition:'width 0.3s' }} />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <><UploadIcon size={16} /> Upload Dataset</>
+            )}
           </button>
         </form>
 
@@ -137,10 +191,10 @@ export default function Upload() {
             <div className="card-title">What happens next?</div>
             <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
               {[
-                ['1', 'Uploaded', 'Your dataset enters the TINE AI platform in Uploaded status.', '#1a56db'],
-                ['2', 'Processing', 'Admin assigns AI processing — transcription, annotation, dialect tagging.', '#7c3aed'],
-                ['3', 'Under Review', 'Human reviewers verify quality, accuracy and compliance.', '#d97706'],
-                ['4', 'Approved', 'TINE AI gives final approval before any client access.', '#059669'],
+                    ['1', 'Uploaded', 'File is saved. Language & region are auto-detected immediately from audio/video content.', '#1a56db'],
+                    ['2', 'Processing', 'Full AI pipeline runs: Quality Check → Lang-ID → STT → Diarization → Translation → TTS.', '#7c3aed'],
+                    ['3', 'Under Review', 'Human reviewers verify quality, accuracy and dialect compliance.', '#d97706'],
+                    ['4', 'Approved', 'TINE AI gives final approval before any client access.', '#059669'],
               ].map(([n, label, desc, color]) => (
                 <div key={n} style={{ display:'flex', gap:12 }}>
                   <div style={{ width:28, height:28, borderRadius:'50%', background:color, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:13, flexShrink:0 }}>{n}</div>

@@ -2,7 +2,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, Upload, Database, Users, Key, ClipboardList,
   LogOut, Globe, ShieldCheck, UserCheck, FileText, CheckSquare,
-  Briefcase, ShieldAlert, GitBranch
+  Briefcase, ShieldAlert, GitBranch, Cpu, Activity, Sliders
 } from 'lucide-react'
 
 const role = () => localStorage.getItem('role')
@@ -13,6 +13,9 @@ const navItems = [
   { label: 'Datasets',         path: '/datasets',          icon: Database,        roles: ['admin', 'supplier', 'client'] },
   { label: 'Upload Data',      path: '/upload',            icon: Upload,          roles: ['admin', 'supplier'] },
   { label: 'Create Data Card', path: '/datacard/create',   icon: FileText,        roles: ['admin', 'supplier'] },
+  { label: 'Model Registry',   path: '/models',            icon: Cpu,             roles: ['admin', 'supplier'] },
+  { label: 'Pipeline Monitor', path: '/pipeline',          icon: Activity,        roles: ['admin', 'supplier'] },
+  { label: 'Fine-tuning',      path: '/finetuning',        icon: Sliders,         roles: ['admin'] },
   { label: 'Approvals Queue',  path: '/approvals',         icon: CheckSquare,     roles: ['admin'] },
   { label: 'Projects & Licenses', path: '/projects',       icon: Briefcase,       roles: ['admin', 'client'] },
   { label: 'Users',            path: '/users',             icon: Users,           roles: ['admin'] },
