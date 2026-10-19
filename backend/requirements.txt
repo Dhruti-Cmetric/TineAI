@@ -1,3 +1,7 @@
+# --- Build & Runtime Tools ---
+setuptools>=68.0.0
+wheel
+
 # --- Core API ---
 fastapi==0.111.0
 uvicorn[standard]==0.29.0
@@ -18,7 +22,7 @@ redis==5.0.4
 flower==2.0.1          # Celery monitoring UI
 
 # --- Speech-to-Text ---
-openai-whisper==20231117
+openai-whisper>=20231117
 faster-whisper==1.0.3   # faster CTranslate2-based Whisper
 transformers>=4.40.0
 accelerate>=0.29.0
@@ -43,7 +47,7 @@ protobuf>=4.25.0
 # facebook/mms-tts loads via transformers + torch above
 
 # --- Language Identification ---
-fasttext-wheel==0.9.2   # fastText bindings (wheel avoids C++ build)
+# facebook/fasttext-language-identification loads directly via transformers
 
 # --- OCR ---
 paddlepaddle==2.6.1
