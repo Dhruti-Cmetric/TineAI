@@ -58,7 +58,8 @@ datasets/
 
 # OS files
 .DS_Store
-Thumbs.db
-desktop.initineai-poc/backend/uploads/
+desktop.ini
+tineai-poc/backend/uploads/
 *.mp4
 node_modules/
+**/node_modules/
