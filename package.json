@@ -1,0 +1,9 @@
+{
+  "name": "tineai-poc",
+  "version": "0.2.0",
+  "private": true,
+  "description": "TINE AI African Data Platform POC",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build"
+  }
+}
