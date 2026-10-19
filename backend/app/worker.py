@@ -617,8 +617,9 @@ def _run_lang_id(text: str, cfg: dict, audio_path: str = None) -> dict:
             try:
                 from faster_whisper import WhisperModel
                 import gc
-                fw = _cached(f"fw_detect_{mname}", lambda m=mname: WhisperModel(
-                    m, device="cpu", compute_type="int8", download_root=_HF_CACHE))
+                dev, comp = _get_device_and_compute()
+                fw = _cached(f"fw_detect_{mname}_{dev}_{comp}", lambda m=mname: WhisperModel(
+                    m, device=dev, compute_type=comp, download_root=_HF_CACHE))
                 segs, info = fw.transcribe(audio_path, beam_size=1)
                 whisper_lang = info.language
                 geo = _whisper_lang_to_region(whisper_lang)
@@ -805,8 +806,9 @@ def detect_language_and_region(file_path: str, data_type: str) -> dict:
         try:
             from faster_whisper import WhisperModel
             import gc
-            fw = _cached(f"fw_detect_{mname}", lambda m=mname: WhisperModel(
-                m, device="cpu", compute_type="int8", download_root=_HF_CACHE))
+            dev, comp = _get_device_and_compute()
+            fw = _cached(f"fw_detect_{mname}_{dev}_{comp}", lambda m=mname: WhisperModel(
+                m, device=dev, compute_type=comp, download_root=_HF_CACHE))
             segs, info = fw.transcribe(audio_path, beam_size=1)
             top_code = info.language
             top_prob = float(info.language_probability)
