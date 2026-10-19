@@ -39,8 +39,10 @@ export default function AccessControlDemo() {
     <div>
       <div className="page-header">
         <div>
-          <h2>Access Control Demo</h2>
-          <p className="text-muted text-sm mt-2">§9.15 — Demonstrate 200 OK, 403 Forbidden (revoked, expired, suspended) scenarios</p>
+          <h2>Enterprise Access Policy & Compliance Center</h2>
+          <p className="text-muted text-sm mt-2">
+            Continuous cryptographic validation of client assignment, license term enforcement, and dataset lifecycle authorization.
+          </p>
         </div>
       </div>
 
@@ -65,16 +67,18 @@ export default function AccessControlDemo() {
       </div>
 
       {/* API key input */}
-      <div className="card" style={{ marginBottom:20 }}>
-        <div className="card-title">API Key</div>
-        <div style={{ display:'flex', gap:10 }}>
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div className="card-title">Client API Key Authorization</div>
+        <div style={{ display: 'flex', gap: 10 }}>
           <input className="form-input" value={apiKey} onChange={e => setApiKey(e.target.value)}
-            placeholder="Paste API key or use pre-seeded demo key" style={{ flex:1, fontFamily:'monospace', fontSize:13 }} />
+            placeholder="Enter client API key to audit policy compliance" style={{ flex: 1, fontFamily: 'var(--font-mono)', fontSize: 13 }} />
           <button className="btn btn-primary" onClick={runScenarios} disabled={loading}>
-            {loading ? <span className="spinner"/> : 'Run All Scenarios'}
+            {loading ? <span className="spinner" /> : 'Audit Policy Enforcement'}
           </button>
         </div>
-        <p className="text-muted text-sm" style={{ marginTop:6 }}>Demo key: <code>tine_demo_client_key_001</code> (pre-seeded for AI Research Lab Ltd.)</p>
+        <p className="text-muted text-sm" style={{ marginTop: 6 }}>
+          Pre-configured enterprise client key: <code style={{ fontFamily: 'var(--font-mono)' }}>tine_demo_client_key_001</code> (assigned to AI Research Lab Ltd.)
+        </p>
       </div>
 
       {/* Scenario results */}

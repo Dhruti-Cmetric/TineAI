@@ -31,6 +31,7 @@ function PrivateRoute({ children }) {
 function SmartDashboard() {
   const role = localStorage.getItem('role')
   if (role === 'supplier') return <SupplierDashboard />
+  if (role === 'client') return <ClientPortal />
   return <Dashboard />
 }
 

@@ -164,7 +164,7 @@ export default function Upload() {
               <input id="fileInput" type="file" style={{ display:'none' }} accept="audio/*,video/*,image/*"
                 onChange={e => setFile(e.target.files[0])} />
             </div>
-            <p className="text-muted text-sm" style={{ marginTop:8 }}>File is optional for demo — metadata-only datasets are supported.</p>
+            <p className="text-muted text-sm" style={{ marginTop:8 }}>File upload is optional — metadata-registered catalog assets are supported.</p>
           </div>
 
           <button className="btn btn-primary btn-lg" type="submit" disabled={loading} style={{ width:'100%', justifyContent:'center', flexDirection:'column', gap:6 }}>

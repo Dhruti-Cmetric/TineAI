@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FileText, CheckCircle } from 'lucide-react'
+import { FileText, CheckCircle, Languages, Globe2 } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
@@ -103,7 +103,8 @@ export default function DataCardCreate() {
           {/* Language & Region */}
           <div className="card" style={{ marginBottom: 20 }}>
             <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              🌍 Language & Regional Information
+              <Languages size={18} color="var(--accent)" />
+              <span>Language & Regional Information</span>
             </div>
             <div className="form-grid">
               <div className="form-group">

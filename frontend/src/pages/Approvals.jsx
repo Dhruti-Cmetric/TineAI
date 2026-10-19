@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle, XCircle, Eye, Clock, Zap } from 'lucide-react'
+import { CheckCircle, XCircle, Eye, Clock, Zap, Languages, MapPin, MessageSquare } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
@@ -87,10 +87,10 @@ export default function Approvals() {
                       {meta.label}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', gap: 20, fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
-                    <span>🌍 {ds.language}</span>
-                    <span>📍 {ds.country}</span>
-                    {ds.dialect && <span>🗣 {ds.dialect}</span>}
+                  <div style={{ display: 'flex', gap: 16, fontSize: 13, color: 'var(--muted)', marginBottom: 8, alignItems: 'center' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Languages size={13} /> {ds.language}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><MapPin size={13} /> {ds.country}</span>
+                    {ds.dialect && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><MessageSquare size={13} /> {ds.dialect}</span>}
                     <span>v{ds.version}</span>
                   </div>
                   {ds.description && (

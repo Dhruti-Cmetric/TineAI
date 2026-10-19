@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   CheckCircle, XCircle, Zap, ArrowLeft, FileAudio, FileVideo, Image,
-  Cpu, Star, GitBranch, RefreshCw, Play, Clock, AlertTriangle, Edit2, Save, X
+  Cpu, Star, GitBranch, RefreshCw, Play, Clock, AlertTriangle, Edit2, Save, X, Sparkles, Languages
 } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
@@ -301,7 +301,7 @@ export default function DatasetDetail() {
                 return (
                   <div style={{ display:'flex', alignItems:'center', gap:8, background:'#eff6ff', border:'1px solid #bfdbfe',
                     borderRadius:6, padding:'7px 12px', marginBottom:12, fontSize:12 }}>
-                    <span style={{ fontSize:15 }}>🪄</span>
+                    <Sparkles size={16} color="var(--accent)" />
                     <span>
                       <strong style={{ color:'#1d4ed8' }}>Auto-detected:</strong>{' '}
                       {ad.language_name} ({ad.language_code}) · {ad.country}
@@ -534,8 +534,9 @@ export default function DatasetDetail() {
                 {/* ── translation ── */}
                 {ds.translation_text && (
                   <div style={{ marginTop: 16 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color:'var(--muted)', marginBottom: 6 }}>
-                      🌐 Translation → English
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Languages size={14} color="var(--accent)" />
+                      <span>Translation to English (NLLB-200)</span>
                     </div>
                     <div style={{ padding:'10px 14px', background:'var(--success-light)',
                       borderRadius: 6, fontSize: 13.5, lineHeight: 1.7 }}>

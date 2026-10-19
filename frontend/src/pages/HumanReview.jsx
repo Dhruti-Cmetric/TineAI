@@ -90,7 +90,7 @@ export default function HumanReview() {
 
           {/* Review form */}
           <div className="card">
-            <div className="card-title">Submit Quality Review (§9.8)</div>
+            <div className="card-title">Submit Expert Quality Assurance Review</div>
             <form onSubmit={submitReview}>
               {/* Decision */}
               <div className="form-group">
