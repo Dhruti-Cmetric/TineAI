@@ -1,5 +1,6 @@
 version: '3.9'
 services:
+
   db:
     image: postgres:16-alpine
     environment:
@@ -10,20 +11,65 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tineai"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
 
   backend:
     build: ./backend
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql://tineai:tineai123@db:5432/tineai_poc
       SECRET_KEY: super-secret-poc-key-change-in-prod
       UPLOAD_DIR: /uploads
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
     volumes:
       - uploads:/uploads
     command: ["sh", "-c", "sleep 3 && python seed.py && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+
+  worker:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://tineai:tineai123@db:5432/tineai_poc
+      SECRET_KEY: super-secret-poc-key-change-in-prod
+      UPLOAD_DIR: /uploads
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+    volumes:
+      - uploads:/uploads
+    command: ["celery", "-A", "app.worker", "worker", "--loglevel=info", "-Q", "pipeline", "--concurrency=2"]
+
+  flower:
+    build: ./backend
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/0
+    command: ["celery", "-A", "app.worker", "flower", "--port=5555"]
 
   frontend:
     build: ./frontend
